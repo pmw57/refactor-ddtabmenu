@@ -1,0 +1,54 @@
+<html>
+
+<head>
+    <title>Dynamic Drive DHTML Scripts- DD Tab Menu Demos</title>
+    <script type="text/javascript" src="../ddtabmenu.js">
+        /***********************************************
+         * DD Tab Menu script- © Dynamic Drive DHTML code library (www.dynamicdrive.com)
+         * This notice MUST stay intact for legal use
+         * Visit Dynamic Drive at http://www.dynamicdrive.com/ for full source code
+         ***********************************************/
+    </script>
+    <!-- CSS for Tab Menu #2 -->
+    <link rel="stylesheet" type="text/css" href="../glowtabs.css" />
+    <link rel="stylesheet" type="text/css" href="lib/mocha.css" />
+    <script type="text/javascript">
+        ddtabmenu.definemenu("ddtabs2", 1) //initialize Tab Menu #2 with 2nd tab selected
+    </script>
+</head>
+
+<body>
+    <div id="ddtabs2" class="glowingtabs">
+        <ul>
+            <li><a href="http://www.dynamicdrive.com" rel="gc1"><span>Home</span></a></li>
+            <li><a href="http://www.dynamicdrive.com/new.htm" rel="gc2"><span>DHTML</span></a></li>
+            <li><a href="http://www.dynamicdrive.com/style/" rel="gc3"><span>CSS</span></a></li>
+            <li><a href="http://www.dynamicdrive.com/forums/"><span>Forums</span></a></li>
+            <li><a href="http://tools.dynamicdrive.com/imageoptimizer/"><span>Gif Optimizer</span></a></li>
+        </ul>
+    </div>
+    <div class="tabcontainer">
+        <div id="gc1" class="tabcontent">
+            Return to the <a href="http://www.dynamicdrive.com">frontpage</a> of Dynamic Drive.
+        </div>
+        <div id="gc2" class="tabcontent">
+            See the new scripts recently added to Dynamic Drive. <a href="http://www.dynamicdrive.com/new.htm">Click here</a>.
+        </div>
+        <div id="gc3" class="tabcontent">
+            Original, practical <a href="http://www.dynamicdrive.com/style/">CSS codes and examples</a> such as CSS menus for your site.
+        </div>
+    </div>
+    <div id="mocha"></div>
+    <script src="lib/mocha.js"></script>
+    <script src="lib/chai.js"></script>
+    <script>
+    mocha.setup("bdd");
+    const expect = chai.expect;
+    </script>
+    <script src="tabmenu.test.js"></script>
+    <script>
+        mocha.run();
+    </script>
+</body>
+
+</html>
