@@ -1,6 +1,5 @@
 /*jslint browser */
-/*global describe beforeEach it expect */
-
+/*global describe before it expect ddtabmenu */
 describe("menutabs", function () {
     function getTabs(menuSelector) {
         const tabContainer = document.querySelector(menuSelector);
