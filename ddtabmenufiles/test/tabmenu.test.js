@@ -1,69 +1,64 @@
 /*jslint browser */
 /*global describe beforeEach it expect */
-describe("test", function () {
-    const tabs = [
-        null,
-        document.querySelectorAll("#ddtabs2 a")[0],
-        document.querySelectorAll("#ddtabs2 a")[1],
-        document.querySelectorAll("#ddtabs2 a")[2],
-        document.querySelectorAll("#ddtabs2 a")[3],
-        document.querySelectorAll("#ddtabs2 a")[4]
-    ];
-    const content = [
-        null,
-        document.querySelector("#gc1"),
-        document.querySelector("#gc2"),
-        document.querySelector("#gc3"),
-        document.querySelector("#gc4"),
-        document.querySelector("#gc5")
-    ];
-    beforeEach(function () {
-        return;
+
+describe("menutabs", function () {
+    function getTabs(menuSelector) {
+        const tabContainer = document.querySelector(menuSelector);
+        const tabLinks = tabContainer.querySelectorAll("a");
+        const tabs = Array.from(tabLinks);
+        tabs.unshift(null);
+        return tabs;
+    }
+    function getContent(menuSelector) {
+        const container = document.querySelector(menuSelector);
+        const contentContainer = container.nextElementSibling;
+        const tabContent = contentContainer.querySelectorAll(".tabcontent");
+        const content = Array.from(tabContent);
+        content.unshift(null);
+        return content;
+    }
+    function getMenuParts(menuSelector) {
+        return {
+            tabs: getTabs(menuSelector),
+            content: getContent(menuSelector)
+        };
+    }
+    function isCurrent(tab) {
+        return tab.classList.contains("current");
+    }
+    function isVisible(panel) {
+        return (panel && panel.style.display) === "block";
+    }
+
+    const {tabs, content} = getMenuParts("#ddtabs1");
+
+    before(function () {
+        ddtabmenu.disabletablinks = true;
+        ddtabmenu.snap2original = [true, 100];
+        ddtabmenu.definemenu("ddtabs1", 1);
     });
+
     describe("has an active tab", function () {
         it("tab2 is current", function () {
-            expect(
-                tabs[1].classList.contains("current"),
-                "tab1 not current"
-            ).to.not.equal(true);
-            expect(
-                tabs[2].classList.contains("current"),
-                "tab2 is current"
-            ).to.equal(true);
-            expect(
-                tabs[3].classList.contains("current"),
-                "tab3 not current"
-            ).to.not.equal(true);
-            expect(
-                tabs[4].classList.contains("current"),
-                "tab4 not current"
-            ).to.not.equal(true);
-            expect(
-                tabs[5].classList.contains("current"),
-                "tab5 not current"
-            ).to.not.equal(true);
+            expect(isCurrent(tabs[1]), "tab1").to.equal(false);
+            expect(isCurrent(tabs[2]), "tab2").to.equal(false);
+            expect(isCurrent(tabs[3]), "tab3").to.equal(false);
+            expect(isCurrent(tabs[4]), "tab4").to.equal(false);
+            expect(isCurrent(tabs[5]), "tab5").to.equal(false);
         });
         it("content2 is shown", function () {
-            expect(
-                content[1].style.display,
-                "content1 not shown"
-            ).to.not.equal("block");
-            expect(
-                content[2].style.display,
-                "content2 is shown"
-            ).to.equal("block");
-            expect(
-                content[3].style.display,
-                "content3 not shown"
-            ).to.not.equal("block");
-            expect(
-                content[4],
-                "content4 doesn't exist"
-            ).to.equal(null);
-            expect(
-                content[5],
-                "content5 doesn't exist"
-            ).to.equal(null);
+            expect(isVisible(content[1]), "content1").to.equal(false);
+            expect(isVisible(content[2]), "content2").to.equal(false);
+            expect(isVisible(content[3]), "content3").to.equal(false);
+            expect(isVisible(content[4]), "content4").to.equal(false);
+            expect(isVisible(content[5]), "content5").to.equal(false);
+        });
+    });
+    describe("disabletablinks", function () {
+        it("ignores tab click", function () {
+            const click = new Event("click");
+            tabs[1].dispatchEvent(click);
+            expect(isCurrent(tabs[1]), "tab1").to.equal(false);
         });
     });
 });

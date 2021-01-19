@@ -2,23 +2,13 @@
 
 <head>
     <title>Dynamic Drive DHTML Scripts- DD Tab Menu Demos</title>
-    <script type="text/javascript" src="../ddtabmenu.js">
-        /***********************************************
-         * DD Tab Menu script- © Dynamic Drive DHTML code library (www.dynamicdrive.com)
-         * This notice MUST stay intact for legal use
-         * Visit Dynamic Drive at http://www.dynamicdrive.com/ for full source code
-         ***********************************************/
-    </script>
     <!-- CSS for Tab Menu #2 -->
     <link rel="stylesheet" type="text/css" href="../glowtabs.css" />
     <link rel="stylesheet" type="text/css" href="lib/mocha.css" />
-    <script type="text/javascript">
-        ddtabmenu.definemenu("ddtabs2", 1) //initialize Tab Menu #2 with 2nd tab selected
-    </script>
 </head>
 
 <body>
-    <div id="ddtabs2" class="glowingtabs">
+    <div id="ddtabs1" class="glowingtabs">
         <ul>
             <li><a href="http://www.dynamicdrive.com" rel="gc1"><span>Home</span></a></li>
             <li><a href="http://www.dynamicdrive.com/new.htm" rel="gc2"><span>DHTML</span></a></li>
@@ -39,6 +29,8 @@
         </div>
     </div>
     <div id="mocha"></div>
+    <script type="text/javascript" src="../ddtabmenu.js"></script>
+    <script src="../../node_modules/lodash/lodash.js"></script>
     <script src="lib/mocha.js"></script>
     <script src="lib/chai.js"></script>
     <script>
@@ -47,9 +39,7 @@
     </script>
     <script src="tabmenu.test.js"></script>
     <script>
-        setTimeout(function () {
-            mocha.run();
-        }, 0);
+    mocha.run();
     </script>
 </body>
 
