@@ -77,7 +77,7 @@ var ddtabmenu = (function makeTabmenu() {
             target.attachEvent(tasktype, functionref);
         }
     }
-    function init(tabid, dselected) {
+    function initmenu(tabid, dselected) {
         function disableClick() {
             return false;
         }
@@ -141,16 +141,25 @@ var ddtabmenu = (function makeTabmenu() {
             }
         });
     }
+    function init(initConfig) {
+        if (initConfig.hasOwnProperty("disabletablinks")) {
+            config.disabletablinks = initConfig.disabletablinks;
+        }
+        if (ddtabmenu.hasOwnProperty("snap2original")) {
+            config.snap2original = initConfig.snap2original;
+        }
+    }
     function definemenu(tabid, dselected) {
+        init(ddtabmenu);
         window.timer = [];
         ddtabmenu[tabid + "-menuitems"] = null;
         ddtabmenu[tabid + "-dselected"] = -1;
         addEvent(window, function initTabs() {
-            ddtabmenu.init(tabid, dselected);
+            ddtabmenu.initmenu(tabid, dselected);
         }, "load");
     }
     return {
         definemenu,
-        init
+        initmenu
     };
 }());
