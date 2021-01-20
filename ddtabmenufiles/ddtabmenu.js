@@ -4,7 +4,10 @@ var ddtabmenu = (function makeTabmenu() {
         // Disable hyperlinks in 1st level tabs with sub contents
         disabletablinks: false,
         // Should tab revert back to default selected when mouse leaves menu
-        snap2original: [true, 300]
+        snap2original: {
+            snap: true,
+            delay: 300
+        }
     };
     function getcurrentpageurl() {
         // get current page url, minus hostname
@@ -62,7 +65,7 @@ var ddtabmenu = (function makeTabmenu() {
             window.timer[tabid] = setTimeout(function showDefault() {
                 const defaultTab = ddtabmenu[tabid + "-dselected"];
                 showsubmenu(tabid, defaultTab);
-            }, config.snap2original[1]);
+            }, config.snap2original.delay);
         }
     }
     function addEvent(target, functionref, tasktype) {
@@ -95,7 +98,7 @@ var ddtabmenu = (function makeTabmenu() {
         function initWithoutSubmenu(tab) {
             tab.onmouseout = function revertWithoutSubmenu(e) {
                 tab.className = "";
-                if (config.snap2original[0] === true) {
+                if (config.snap2original.snap === true) {
                     revert2default(tab, tabid, e);
                 }
             };
@@ -117,7 +120,7 @@ var ddtabmenu = (function makeTabmenu() {
                 if (ddtabmenu.disabletablinks) {
                     menuitem.onclick = disableClick;
                 }
-                if (config.snap2original[0] === true) {
+                if (config.snap2original.snap === true) {
                     id = menuitem.getAttribute("rel");
                     submenu = document.getElementById(id);
                     initWithSubmenu(tabid, menuitem, submenu);
@@ -146,7 +149,10 @@ var ddtabmenu = (function makeTabmenu() {
             config.disabletablinks = initConfig.disabletablinks;
         }
         if (ddtabmenu.hasOwnProperty("snap2original")) {
-            config.snap2original = initConfig.snap2original;
+            config.snap2original = {
+                snap: initConfig.snap2original[0],
+                delay: initConfig.snap2original[1]
+            };
         }
     }
     function definemenu(tabid, dselected) {
