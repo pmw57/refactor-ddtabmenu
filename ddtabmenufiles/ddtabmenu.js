@@ -2,170 +2,170 @@
 var ddtabmenu = (function makeTabmenu() {
     const config = {
         // Disable hyperlinks in 1st level tabs with sub contents
-        disabletablinks: false,
+        disableTabLinks: false,
         // Should tab revert back to default selected when mouse leaves menu
-        snap2original: {
+        snapToOriginal: {
             snap: true,
             delay: 300
         }
     };
-    function getcurrentpageurl() {
+    function getPathName() {
         // get current page url, minus hostname
         return window.location.href.replace("http://" + window.location.hostname, "").replace(/^\//, "");
     }
-    function isSelected(menuurl) {
-        menuurl = menuurl.replace("http://" + menuurl.hostname, "").replace(/^\//, "");
-        const currentpageurl = getcurrentpageurl();
-        return (currentpageurl === menuurl);
+    function isSelected(menuUrl) {
+        const menuPathName = menuUrl.replace("http://" + menuUrl.hostname, "").replace(/^\//, "");
+        const currentPathName = getPathName();
+        return currentPathName === menuPathName;
     }
-    function isContained(m, e) {
-        e = window.event || e;
-        var c = e.relatedTarget || (
-            (e.type === "mouseover")
-            ? e.fromElement
-            : e.toElement
+    function isContained(submenu, evt) {
+        evt = window.event || evt;
+        var el = evt.relatedTarget || (
+            (evt.type === "mouseover")
+            ? evt.fromElement
+            : evt.toElement
         );
-        while (c && c !== m) {
+        while (el && el !== submenu) {
             try {
-                c = c.parentNode;
+                el = el.parentNode;
             } catch (ignore) {
-                c = m;
+                el = submenu;
             }
         }
-        if (c === m) {
+        if (el === submenu) {
             return true;
         } else {
             return false;
         }
     }
-    function clearrevert2default(tabid) {
-        if (window.timer[tabid]) {
-            clearTimeout(window.timer[tabid]);
+    function clearRevertToDefault(tabId) {
+        if (window.timer[tabId]) {
+            clearTimeout(window.timer[tabId]);
         }
     }
-    function showsubmenu(tabid, targetitem) {
-        var menuitems = ddtabmenu[tabid + "-menuitems"];
-        clearrevert2default(tabid);
+    function showSubmenu(tabId, targetItem) {
+        var menuItems = ddtabmenu[tabId + "-menuItems"];
+        clearRevertToDefault(tabId);
         var id = "";
-        menuitems.forEach(function (menuitem) {
-            menuitem.className = "";
-            if (menuitem.hasSubContent === true) {
-                id = menuitem.getAttribute("rel");
+        menuItems.forEach(function (menuItem) {
+            menuItem.className = "";
+            if (menuItem.hasSubContent === true) {
+                id = menuItem.getAttribute("rel");
                 document.getElementById(id).style.display = "none";
             }
         });
-        targetitem.className = "current";
-        if (targetitem.hasSubContent === true) {
-            id = targetitem.getAttribute("rel");
+        targetItem.className = "current";
+        if (targetItem.hasSubContent === true) {
+            id = targetItem.getAttribute("rel");
             document.getElementById(id).style.display = "block";
         }
     }
-    function revert2default(outobj, tabid, e) {
-        if (!isContained(outobj, tabid, e)) {
-            window.timer[tabid] = setTimeout(function showDefault() {
-                const defaultTab = ddtabmenu[tabid + "-dselected"];
-                showsubmenu(tabid, defaultTab);
-            }, config.snap2original.delay);
+    function revertToDefault(submenu, tabId, evt) {
+        if (!isContained(submenu, tabId, evt)) {
+            window.timer[tabId] = setTimeout(function showDefault() {
+                const defaultTab = ddtabmenu[tabId + "-defaultSelected"];
+                showSubmenu(tabId, defaultTab);
+            }, config.snapToOriginal.delay);
         }
     }
-    function addEvent(target, functionref, tasktype) {
-        tasktype = (
+    function addEvent(target, taskName, callback) {
+        const taskType = (
             window.addEventListener
-            ? tasktype
-            : "on" + tasktype
+            ? taskName
+            : "on" + taskName
         );
         if (target.addEventListener) {
-            target.addEventListener(tasktype, functionref, false);
+            target.addEventListener(taskType, callback, false);
         } else if (target.attachEvent) {
-            target.attachEvent(tasktype, functionref);
+            target.attachEvent(taskType, callback);
         }
     }
-    function initmenu(tabid, dselected) {
+    function initMenu(tabId, defaultSelected) {
         function disableClick() {
             return false;
         }
-        function initWithSubmenu(tabid, tab, submenu) {
-            function revert(e) {
-                revert2default(submenu, tabid, e);
+        function initWithSubmenu(tabId, tab, submenu) {
+            function revert(evt) {
+                revertToDefault(submenu, tabId, evt);
             }
             function clearRevert() {
-                clearrevert2default(tabid);
+                clearRevertToDefault(tabId);
             }
             tab.onmouseout = revert;
             submenu.onmouseover = clearRevert;
             submenu.onmouseout = revert;
         }
         function initWithoutSubmenu(tab) {
-            tab.onmouseout = function revertWithoutSubmenu(e) {
+            tab.onmouseout = function revertWithoutSubmenu(evt) {
                 tab.className = "";
-                if (config.snap2original.snap === true) {
-                    revert2default(tab, tabid, e);
+                if (config.snapToOriginal.snap === true) {
+                    revertToDefault(tab, tabId, evt);
                 }
             };
         }
         function initSubmenu(tab) {
             tab.onmouseover = function leaveTab() {
-                showsubmenu(tabid, tab);
+                showSubmenu(tabId, tab);
             };
         }
-        var container = document.getElementById(tabid);
-        var menuitems = container.querySelectorAll("a");
-        ddtabmenu[tabid + "-menuitems"] = menuitems;
+        var container = document.getElementById(tabId);
+        var menuItems = container.querySelectorAll("a");
+        ddtabmenu[tabId + "-menuItems"] = menuItems;
         var id = "";
         var submenu;
-        var setalready = false;
-        menuitems.forEach(function (menuitem, x) {
-            if (menuitem.getAttribute("rel")) {
-                ddtabmenu[tabid + "-menuitems"][x].hasSubContent = true;
-                if (ddtabmenu.disabletablinks) {
-                    menuitem.onclick = disableClick;
+        var defaultIsShown = false;
+        menuItems.forEach(function (menuItem, menuIndex) {
+            if (menuItem.getAttribute("rel")) {
+                ddtabmenu[tabId + "-menuItems"][menuIndex].hasSubContent = true;
+                if (ddtabmenu.disableTabLinks) {
+                    menuItem.onclick = disableClick;
                 }
-                if (config.snap2original.snap === true) {
-                    id = menuitem.getAttribute("rel");
+                if (config.snapToOriginal.snap === true) {
+                    id = menuItem.getAttribute("rel");
                     submenu = document.getElementById(id);
-                    initWithSubmenu(tabid, menuitem, submenu);
+                    initWithSubmenu(tabId, menuItem, submenu);
                 }
             } else {
-                //for items without a submenu, add onMouseout effect
-                initWithoutSubmenu(menuitems[x]);
+                // for items without a submenu, add onMouseout effect
+                initWithoutSubmenu(menuItem);
             }
-            initSubmenu(menuitems[x]);
+            initSubmenu(menuItem);
             if (
-                dselected === "auto" &&
-                setalready === true &&
-                isSelected(menuitem.href)
+                defaultSelected === "auto" &&
+                defaultIsShown !== true &&
+                isSelected(menuItem.href)
             ) {
-                showsubmenu(tabid, menuitem);
-                ddtabmenu[tabid + "-dselected"] = menuitem;
-                setalready = true;
-            } else if (parseInt(dselected) === x) {
-                showsubmenu(tabid, menuitem);
-                ddtabmenu[tabid + "-dselected"] = menuitem;
+                showSubmenu(tabId, menuItem);
+                ddtabmenu[tabId + "-defaultSelected"] = menuItem;
+                defaultIsShown = true;
+            } else if (parseInt(defaultSelected) === menuIndex) {
+                showSubmenu(tabId, menuItem);
+                ddtabmenu[tabId + "-defaultSelected"] = menuItem;
             }
         });
     }
     function init(initConfig) {
         if (initConfig.hasOwnProperty("disabletablinks")) {
-            config.disabletablinks = initConfig.disabletablinks;
+            config.disableTabLinks = initConfig.disabletablinks;
         }
         if (ddtabmenu.hasOwnProperty("snap2original")) {
-            config.snap2original = {
+            config.snapToOriginal = {
                 snap: initConfig.snap2original[0],
                 delay: initConfig.snap2original[1]
             };
         }
     }
-    function definemenu(tabid, dselected) {
+    function definemenu(tabId, defaultSelected) {
         init(ddtabmenu);
         window.timer = [];
-        ddtabmenu[tabid + "-menuitems"] = null;
-        ddtabmenu[tabid + "-dselected"] = -1;
-        addEvent(window, function initTabs() {
-            ddtabmenu.initmenu(tabid, dselected);
-        }, "load");
+        ddtabmenu[tabId + "-menuItems"] = null;
+        ddtabmenu[tabId + "-defaultSelected"] = -1;
+        addEvent(window, "load", function initTabs() {
+            ddtabmenu.initMenu(tabId, defaultSelected);
+        });
     }
     return {
         definemenu,
-        initmenu
+        initMenu
     };
 }());
