@@ -1,14 +1,27 @@
 /*jslint browser */
 var ddtabmenu = (function makeTabmenu() {
-    const config = {
-        // Disable hyperlinks in 1st level tabs with sub contents
-        disableTabLinks: false,
-        // Should tab revert back to default selected when mouse leaves menu
-        snapToOriginal: {
-            snap: true,
-            delay: 300
+    const tabs = [];
+    function init(initConfig) {
+        const config = {
+            // Disable hyperlinks in 1st level tabs with sub contents
+            disableTabLinks: false,
+            // Should tab revert back to default selected when mouse leaves menu
+            snapToOriginal: {
+                snap: true,
+                delay: 300
+            }
+        };
+        if (initConfig.hasOwnProperty("disabletablinks")) {
+            config.disableTabLinks = initConfig.disabletablinks;
         }
-    };
+        if (initConfig.hasOwnProperty("snap2original")) {
+            config.snapToOriginal = {
+                snap: initConfig.snap2original[0],
+                delay: initConfig.snap2original[1]
+            };
+        }
+        return config;
+    }
     function getPathName() {
         // get current page url, minus hostname
         return window.location.href.replace("http://" + window.location.hostname, "").replace(/^\//, "");
@@ -39,12 +52,12 @@ var ddtabmenu = (function makeTabmenu() {
         }
     }
     function clearRevertToDefault(tabId) {
-        if (window.timer[tabId]) {
-            clearTimeout(window.timer[tabId]);
+        if (tabs[tabId].timer) {
+            clearTimeout(tabs[tabId].timer);
         }
     }
     function showSubmenu(tabId, targetItem) {
-        var menuItems = ddtabmenu[tabId + "-menuItems"];
+        var menuItems = tabs[tabId].menuItems;
         clearRevertToDefault(tabId);
         var id = "";
         menuItems.forEach(function (menuItem) {
@@ -61,10 +74,10 @@ var ddtabmenu = (function makeTabmenu() {
         }
     }
     function revertToDefault(submenu, tabId, evt) {
+        const config = tabs[tabId].config;
         if (!isContained(submenu, tabId, evt)) {
-            window.timer[tabId] = setTimeout(function showDefault() {
-                const defaultTab = ddtabmenu[tabId + "-defaultSelected"];
-                showSubmenu(tabId, defaultTab);
+            tabs[tabId].timer = setTimeout(function showDefault() {
+                showSubmenu(tabId, tabs[tabId].defaultSelected);
             }, config.snapToOriginal.delay);
         }
     }
@@ -96,6 +109,7 @@ var ddtabmenu = (function makeTabmenu() {
             submenu.onmouseout = revert;
         }
         function initWithoutSubmenu(tab) {
+            const config = tabs[tabId].config;
             tab.onmouseout = function revertWithoutSubmenu(evt) {
                 tab.className = "";
                 if (config.snapToOriginal.snap === true) {
@@ -110,14 +124,15 @@ var ddtabmenu = (function makeTabmenu() {
         }
         var container = document.getElementById(tabId);
         var menuItems = container.querySelectorAll("a");
-        ddtabmenu[tabId + "-menuItems"] = menuItems;
+        tabs[tabId].menuItems = menuItems;
         var id = "";
         var submenu;
         var defaultIsShown = false;
         menuItems.forEach(function (menuItem, menuIndex) {
+            const config = tabs[tabId].config;
             if (menuItem.getAttribute("rel")) {
-                ddtabmenu[tabId + "-menuItems"][menuIndex].hasSubContent = true;
-                if (ddtabmenu.disableTabLinks) {
+                tabs[tabId].menuItems[menuIndex].hasSubContent = true;
+                if (config.disableTabLinks) {
                     menuItem.onclick = disableClick;
                 }
                 if (config.snapToOriginal.snap === true) {
@@ -136,30 +151,21 @@ var ddtabmenu = (function makeTabmenu() {
                 isSelected(menuItem.href)
             ) {
                 showSubmenu(tabId, menuItem);
-                ddtabmenu[tabId + "-defaultSelected"] = menuItem;
+                tabs[tabId].defaultSelected = menuItem;
                 defaultIsShown = true;
             } else if (parseInt(defaultSelected) === menuIndex) {
                 showSubmenu(tabId, menuItem);
-                ddtabmenu[tabId + "-defaultSelected"] = menuItem;
+                tabs[tabId].defaultSelected = menuItem;
             }
         });
     }
-    function init(initConfig) {
-        if (initConfig.hasOwnProperty("disabletablinks")) {
-            config.disableTabLinks = initConfig.disabletablinks;
-        }
-        if (ddtabmenu.hasOwnProperty("snap2original")) {
-            config.snapToOriginal = {
-                snap: initConfig.snap2original[0],
-                delay: initConfig.snap2original[1]
-            };
-        }
-    }
     function definemenu(tabId, defaultSelected) {
-        init(ddtabmenu);
-        window.timer = [];
-        ddtabmenu[tabId + "-menuItems"] = null;
-        ddtabmenu[tabId + "-defaultSelected"] = -1;
+        tabs[tabId] = {
+            config: Object.assign({}, init(ddtabmenu)),
+            timer: [],
+            menuItems: null,
+            defaultSelected: -1
+        };
         addEvent(window, "load", function initTabs() {
             ddtabmenu.initMenu(tabId, defaultSelected);
         });
