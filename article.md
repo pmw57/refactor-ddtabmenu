@@ -467,7 +467,84 @@ By staying focused on ensuring that the refactor doesn't change the existing int
 
 ## 6. Expressive variable names
 
+While working with the code I've noticed that many variable names are all lowercase, making it difficult to easily understand them. We can improve that by using camelcase for the names instead.
+
+We can also rename some of the variables to make it easier to understand what they are.
+
+Here's how some of the code looks before improving the names:
+
+```javascript
+    function revert2default(outobj, tabid, e) {
+        if (!isContained(outobj, tabid, e)) {
+            window.timer[tabid] = setTimeout(function showDefault() {
+                showsubmenu(tabid, ddtabmenu[tabid + "-dselected"]);
+            }, config.snap2original.delay);
+        }
+    }
+```
+
+Best results are achieved by focusing on one name at a time, and testing frequently to ensure that everything still works.
+
+```javascript
+    function revertToDefault(submenu, tabId, evt) {
+        if (!isContained(submenu, tabId, evt)) {
+            window.timer[tabId] = setTimeout(function showDefault() {
+                showSubmenu(tabId, ddtabmenu[tabId + "-defaultSelected"]);
+            }, config.snapToOriginal.delay);
+        }
+    }
+```
+
 ## 7. Group tabs info together
+
+While doing the previous refactor I notices that the ddtabmenu object is being used to store some local variables, such as menuItems and defaultSelected.
+
+```javascript
+    function definemenu(tabId, defaultSelected) {
+        //...
+        ddtabmenu[tabId + "-menuItems"] = null;
+        ddtabmenu[tabId + "-defaultSelected"] = -1;
+        //...
+    }
+```
+
+Those can be better located in a tabs array at the top of the code, using tabId as a reference and containing the information in an object.
+
+
+```javascript
+    const config = {
+        //...
+    };
+    const tabs = [];
+//...
+    function revertToDefault(submenu, tabId, evt) {
+        if (!isContained(submenu, tabId, evt)) {
+            tabs[tabId].timer = setTimeout(function showDefault() {
+                showSubmenu(tabId, tabs[tabId].defaultSelected);
+            }, config.snapToOriginal.delay);
+        }
+    }
+```
+
+### 7.1 Move config into tabs array
+
+Now that we have info about tabs kept in an array, we can move the config information into the init function, and put that config in the tabs array too.
+
+```javascript
+    function init(initConfig) {
+        const config = {
+            // Disable hyperlinks in 1st level tabs with sub contents
+            disableTabLinks: false,
+            // Should tab revert back to default selected when mouse leaves menu
+            snapToOriginal: {
+                snap: true,
+                delay: 300
+            }
+        };
+        //...
+        return config;
+    }
+```
 
 ## 8. Avoid passing evt object as a function argument
 
