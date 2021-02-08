@@ -528,7 +528,24 @@ Those can be better located in a tabs array at the top of the code, using tabId 
 
 ### 7.1 Move config into tabs array
 
-Now that we have info about tabs kept in an array, we can move the config information into the init function, and put that config in the tabs array too.
+The config information doesn't need to be global to the code. Instead, the config can be neatly organised into the tabs array as well. Because that means knowing which tabId is being used.
+
+Here is the config before it's moved:
+
+```javascript
+var ddtabmenu = (function makeTabmenu() {
+    const config = {
+        // Disable hyperlinks in 1st level tabs with sub contents
+        disableTabLinks: false,
+        // Should tab revert back to default selected when mouse leaves menu
+        snapToOriginal: {
+            snap: true,
+            delay: 300
+        }
+    };
+```
+
+We can move that config into the init function where the tabId is known. Once the config has been updated, by other code in the init function we can return that updated config so that it can be assigned to the tabs object.
 
 ```javascript
     function init(initConfig) {
@@ -544,7 +561,36 @@ Now that we have info about tabs kept in an array, we can move the config inform
         //...
         return config;
     }
+    //...
+    function definemenu(tabId, defaultSelected) {
+        tabs[tabId] = {
+            config: init(ddtabmenu),
+            timer: [],
+            menuItems: null,
+            defaultSelected: -1
+        };
 ```
+
+As the config is now in a different location, we also need to update the references to that config too. A nice easy way to achieve that is to define a config variable where needed:
+
+```javascript
+    function revertToDefault(submenu, tabId, evt) {
+        const config = tabs[tabId].config;
+        //...
+    }
+//...
+        function initWithoutSubmenu(tab) {
+            const config = tabs[tabId].config;
+            //...
+        }
+//...
+        menuItems.forEach(function (menuItem, menuIndex) {
+            const config = tabs[tabId].config;
+            //...
+        });
+```
+
+A nice benefit of having separate configs, is that it will make it easier to later on develop support for different tab menus each with different capabilities.
 
 ## 8. Avoid passing evt object as a function argument
 
