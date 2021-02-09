@@ -43,7 +43,7 @@ My process when linting with JSLint is to first use [JS Beautifier](https://beau
 The linting refactorings that were done with the tab menu code include:
 
 - line length ([extract variable](https://refactoring.guru/extract-variable#typescript))
-- the this keyword 
+- the this keyword
 - semicolons
 - braces
 - loops
@@ -114,7 +114,7 @@ When using the this keyword inside of an event handler, it refers to the element
 
 With my linter though we're not allowed to keep the this keyword, resulting in other techniques being used.
 
-In this case, the this keyword can't just be replaced with menuitems[x] because by the time the event function runs, the x parameter won't have the correct value. Instead, we can move the code out to a separate function, in this case called initEmptyTab, and pass menuitems[x] as an argument to the initEmptyTab function. 
+In this case, the this keyword can't just be replaced with menuitems[x] because by the time the event function runs, the x parameter won't have the correct value. Instead, we can move the code out to a separate function, in this case called initEmptyTab, and pass menuitems[x] as an argument to the initEmptyTab function.
 
 ```javascript
             function initWithoutSubmenu(tab) {
@@ -594,6 +594,75 @@ A nice benefit of having separate configs, is that it will make it easier to lat
 
 ## 8. Avoid passing evt object as a function argument
 
-## 9. Simplify if statements
+Not all refactorings are planned out in advance. Sometimes you just see a small improvement that can be made.
 
-## 10. 
+While making the above config update I saw that the evt object is being passed to the revertToDefault function. Passing the evt object along with other parameters is typically a bad idea. It's better to instead get the information that you need from the event object, so that you can then work with that more meaningful information instead.
+
+The revertToDefault function passes the evt object to the isContained function.
+
+```javascript
+    function isContained(submenu, evt) {
+        evt = window.event || evt;
+        var el = evt.relatedTarget || (
+            (evt.type === "mouseover")
+            ? evt.fromElement
+            : evt.toElement
+        );
+        //...
+    }
+//...
+    function revertToDefault(submenu, tabId, evt) {
+        const config = tabs[tabId].config;
+        if (!isContained(submenu, tabId, evt)) {
+            //...
+        }
+    }
+```
+
+Now that we are taking a closer look at this, there is a clear problem with the isContained function call. It's being called with (submenu, tabId, evt), but the parameters are only for (submenu, evt). It looks like this is an untested piece of code where the isContained function doesn't use either tabId or evt.
+
+Currently the isContained function only returns false. We can achieve exactly the same type of thing by removing isContained from the if statement. Refactoring is not about developing new features, so we can add that isContained feature to our TODO list for some other time.
+
+With the isContained function removed, and the revertToDefault function simplified, the code still works in exactly the same way that it did before.
+
+```javascript
+    function revertToDefault(submenu, tabId, evt) {
+        const config = tabs[tabId].config;
+        tabs[tabId].timer = setTimeout(function showDefault() {
+            showSubmenu(tabId, tabs[tabId].defaultSelected);
+        }, config.snapToOriginal.delay);
+    }
+```
+
+We can now remove that evt function parameter, and the submenu parameter isn't needed either:
+
+```javascript
+    // function revertToDefault(submenu, tabId, evt) {
+    function revertToDefault(tabId) {
+        //...
+    }
+//...
+        function initWithSubmenu(tabId, tab, submenu) {
+            // function revert(evt) {
+            function revert() {
+                // revertToDefault(submenu, tabId, evt);
+                revertToDefault(tabId);
+            }
+//...
+        function initWithoutSubmenu(tab) {
+            const config = tabs[tabId].config;
+            // tab.onmouseout = function revertWithoutSubmenu(evt) {
+            tab.onmouseout = function revertWithoutSubmenu() {
+                tab.className = "";
+                if (config.snapToOriginal.snap === true) {
+                    // revertToDefault(tab, tabId, evt);
+                    revertToDefault(tabId);
+                }
+        }
+```
+
+## 9.
+
+I see that all of the revert functions use tabId, but only some of them use submenu. That means that tabId is the more important parameter and should be used first in the parameter list.
+
+## 10. Simplify if statements

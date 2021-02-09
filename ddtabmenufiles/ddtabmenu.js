@@ -31,26 +31,6 @@ var ddtabmenu = (function makeTabmenu() {
         const currentPathName = getPathName();
         return currentPathName === menuPathName;
     }
-    function isContained(submenu, evt) {
-        evt = window.event || evt;
-        var el = evt.relatedTarget || (
-            (evt.type === "mouseover")
-            ? evt.fromElement
-            : evt.toElement
-        );
-        while (el && el !== submenu) {
-            try {
-                el = el.parentNode;
-            } catch (ignore) {
-                el = submenu;
-            }
-        }
-        if (el === submenu) {
-            return true;
-        } else {
-            return false;
-        }
-    }
     function clearRevertToDefault(tabId) {
         if (tabs[tabId].timer) {
             clearTimeout(tabs[tabId].timer);
@@ -73,13 +53,11 @@ var ddtabmenu = (function makeTabmenu() {
             document.getElementById(id).style.display = "block";
         }
     }
-    function revertToDefault(submenu, tabId, evt) {
+    function revertToDefault(tabId) {
         const config = tabs[tabId].config;
-        if (!isContained(submenu, tabId, evt)) {
-            tabs[tabId].timer = setTimeout(function showDefault() {
-                showSubmenu(tabId, tabs[tabId].defaultSelected);
-            }, config.snapToOriginal.delay);
-        }
+        tabs[tabId].timer = setTimeout(function showDefault() {
+            showSubmenu(tabId, tabs[tabId].defaultSelected);
+        }, config.snapToOriginal.delay);
     }
     function addEvent(target, taskName, callback) {
         const taskType = (
@@ -98,8 +76,8 @@ var ddtabmenu = (function makeTabmenu() {
             return false;
         }
         function initWithSubmenu(tabId, tab, submenu) {
-            function revert(evt) {
-                revertToDefault(submenu, tabId, evt);
+            function revert() {
+                revertToDefault(tabId);
             }
             function clearRevert() {
                 clearRevertToDefault(tabId);
@@ -110,10 +88,10 @@ var ddtabmenu = (function makeTabmenu() {
         }
         function initWithoutSubmenu(tab) {
             const config = tabs[tabId].config;
-            tab.onmouseout = function revertWithoutSubmenu(evt) {
+            tab.onmouseout = function revertWithoutSubmenu() {
                 tab.className = "";
                 if (config.snapToOriginal.snap === true) {
-                    revertToDefault(tab, tabId, evt);
+                    revertToDefault(tab, tabId);
                 }
             };
         }
