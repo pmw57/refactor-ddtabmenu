@@ -85,23 +85,25 @@ var ddtabmenu = (function makeTabmenu() {
             function clearRevert() {
                 clearRevertToDefault(tabId);
             }
-            tab.onmouseout = revert;
-            submenu.onmouseover = clearRevert;
-            submenu.onmouseout = revert;
+            addEvent(tab, "mouseleave", handlers.revert);
+            addEvent(submenu, "mouseenter", handlers.clearRevert);
+            addEvent(submenu, "mouseleave", handlers.revert);
         }
         function initWithoutSubmenu(tab) {
             const config = tabs[tabId].config;
-            tab.onmouseout = function revertWithoutSubmenu() {
+            function revertWithoutSubmenu() {
                 tab.className = "";
                 if (config.snapToOriginal.snap === true) {
                     revertToDefault(tab, tabId);
                 }
-            };
+            }
+            addEvent(tab, "mouseleave", revertWithoutSubmenu);
         }
         function initSubmenu(tab) {
-            tab.onmouseover = function leaveTab() {
+            function leaveTab() {
                 showSubmenu(tabId, tab);
-            };
+            }
+            addEvent(tab, "mouseenter", leaveTab);
         }
         var container = document.getElementById(tabId);
         var menuItems = container.querySelectorAll("a");
@@ -114,7 +116,7 @@ var ddtabmenu = (function makeTabmenu() {
             if (menuItem.getAttribute("rel")) {
                 tabs[tabId].menuItems[menuIndex].hasSubContent = true;
                 if (config.disableTabLinks) {
-                    menuItem.onclick = disableClick;
+                    addEvent(menuItem, "click", disableClick);
                 }
                 if (config.snapToOriginal.snap === true) {
                     id = menuItem.getAttribute("rel");
@@ -141,15 +143,16 @@ var ddtabmenu = (function makeTabmenu() {
         });
     }
     function definemenu(tabId, defaultSelected) {
+        function initTabs() {
+            ddtabmenu.initMenu(tabId, defaultSelected);
+        }
         tabs[tabId] = {
             config: Object.assign({}, init(ddtabmenu)),
             timer: [],
             menuItems: null,
             defaultSelected: -1
         };
-        addEvent(window, "load", function initTabs() {
-            ddtabmenu.initMenu(tabId, defaultSelected);
-        });
+        addEvent(window, "load", initTabs);
     }
     return {
         definemenu,

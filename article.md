@@ -676,5 +676,33 @@ Because tests are really helpful to ensure that refactoring doesn't change the b
     };
 ```
 
+### 9.1 Use a consistent method
+
+While scanning the code for all of the event assignments, I see that some of them use an addEvent function, and other ones ignore it, preferring to directly assign the even handler instead. It seems that we should use that addEvent function for all of them, so I update the code to use the addEvent function before moving things around.
+
+```javascript
+            // tab.onmouseout = revert;
+            addEvent(tab, "mouseout", revert);
+            // submenu.onmouseover = clearRevert;
+            addEvent(submenu, "mouseover", clearRevert);
+            // submenu.onmouseout = revert;
+            addEvent(submenu, "mouseout", revert);
+...
+            // tab.onmouseout = function revertWithoutSubmenu() {
+            function revertWithoutSubmenu() {
+                ...
+            }
+            addEvent(tab, "mouseout", revertWithoutSubmenu);
+...
+            // tab.onmouseover = function leaveTab() {
+            function leaveTab() {
+                ...
+            }
+            addEvent(tab, "mouseover", leaveTab);
+...
+                    // menuItem.onclick = disableClick;
+                    addEvent(menuItem, "click", disableClick);
+```
+
 
 ## 10. Simplify if statements
