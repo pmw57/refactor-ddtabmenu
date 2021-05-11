@@ -59,6 +59,9 @@ var ddtabmenu = (function makeTabmenu() {
             showSubmenu(tabId, tabs[tabId].defaultSelected);
         }, config.snapToOriginal.delay);
     }
+    const handlers = {
+    };
+
     function addEvent(target, taskName, callback) {
         const taskType = (
             window.addEventListener
@@ -150,6 +153,7 @@ var ddtabmenu = (function makeTabmenu() {
     }
     return {
         definemenu,
-        initMenu
+        initMenu,
+        handlers
     };
 }());

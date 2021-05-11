@@ -661,8 +661,20 @@ We can now remove that evt function parameter, and the submenu parameter isn't n
         }
 ```
 
-## 9.
+## 9. Event handlers
 
-I see that all of the revert functions use tabId, but only some of them use submenu. That means that tabId is the more important parameter and should be used first in the parameter list.
+Several events are managed throughout the code, which can make it tricky to make sense of them. What can help to make it easier to understand them, and also to test them, is to bring the event handlers together into a single handlers object. That way those handlers can also be made available for testing too.
+
+Because tests are really helpful to ensure that refactoring doesn't change the behaviour of the code, I've used a separate discussion thread called [Using tests to help improve the structure of some code](https://www.sitepoint.com/community/t/using-tests-to-help-improve-structure-of-some-code/364411/) to 
+```javascript
+    const handlers = {};
+...
+    return {
+        definemenu,
+        initMenu,
+        handlers
+    };
+```
+
 
 ## 10. Simplify if statements
