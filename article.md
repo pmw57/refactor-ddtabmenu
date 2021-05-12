@@ -704,5 +704,78 @@ While scanning the code for all of the event assignments, I see that some of the
                     addEvent(menuItem, "click", disableClick);
 ```
 
+### 9.2 Get the tabId
+
+The tabId in each of the event handlers is currently available from the scope of its parent function. That's not good enough. We want to move the event handler functions to the handlers object, which means that the functions need to be self contained. We need to find some other way of accessing the tabId. Fortunately for us, event handlers all have the event object from which to obtain information.
+
+We can pass the event object to a getTabId function, to help us get the information that we need.
+
+```javascript
+            function getTabId(el) {
+                while (el && el.nodeName !== "DIV") {
+                    el = el.parentNode;
+                }
+                return el.id;
+            }
+            // function revert(tabId) {
+            function revert(evt) {
+                const tabId = getTabId(evt.target);
+                revertToDefault(tabId);
+            }
+```
+
+Other uses of getTabId are more troubled because they originate from the tabcontent section. The mouseover and mouseout events trigger on every element in there, which is not suitable. It's much more reliable to use mousenter and mouseleave instead.
+
+```javascript
+        function initWithSubmenu(tab, submenu) {
+            // addEvent(tab, "mouseout", handlers.revert);
+            addEvent(tab, "mouseleave", handlers.revert);
+            // addEvent(submenu, "mouseover", handlers.clearRevert);
+            addEvent(submenu, "mouseenter", handlers.clearRevert);
+            // addEvent(submenu, "mouseout", handlers.revert);
+            addEvent(submenu, "mouseleave", handlers.revert);
+        }
+```
+
+Now that the event is triggering on the tabcontent element instead of somewhere randomly inside of it, we can use that to reliably get the tabId.
+
+```javascript
+    function getTabId(el) {
+        if (el.classList.contains("tabcontent")) {
+            return getTabId(document.querySelector("[rel=" + el.id + "]"));
+        }
+        while (el && el.nodeName !== "DIV") {
+            el = el.parentNode;
+        }
+        return el.id;
+    }
+```
+
+### 9.3 Move event handlers to handlers object
+
+We can now move those event handler functions into the handlers object:
+
+```javascript
+    const handlers = {
+        revert: function revert(evt) {
+            const tabId = getTabId(evt.target);
+            revertToDefault(tabId);
+        },
+        clearRevert: function clearRevert(evt) {
+            const tabId = getTabId(evt.target);
+            clearRevertToDefault(tabId);
+        }
+    };
+//...
+        function initWithSubmenu(tab, submenu) {
+            addEvent(tab, "mouseout", handlers.revert);
+            addEvent(submenu, "mouseover", handlers.clearRevert);
+            addEvent(submenu, "mouseout", handlers.revert);
+        }
+```
+
+Those event handlers are now more easily available for testing, the types of events are all in one place, and it's a lot easier to understand the assigned events too.
 
 ## 10. Simplify if statements
+
+
