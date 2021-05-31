@@ -16,19 +16,22 @@ var ddtabmenu = (function makeTabmenu() {
             clearTimeout(tabs[tabId].timer);
         }
     }
+    function hasSubMenu(menuItem) {
+        return menuItem.getAttribute("rel");
+    }
     function showSubmenu(tabId, targetItem) {
         var menuItems = tabs[tabId].menuItems;
         clearRevertToDefault(tabId);
         var id = "";
         menuItems.forEach(function (menuItem) {
             menuItem.className = "";
-            if (menuItem.hasSubContent === true) {
+            if (hasSubMenu(menuItem)) {
                 id = menuItem.getAttribute("rel");
                 document.getElementById(id).style.display = "none";
             }
         });
         targetItem.className = "current";
-        if (targetItem.hasSubContent === true) {
+        if (hasSubMenu(targetItem)) {
             id = targetItem.getAttribute("rel");
             document.getElementById(id).style.display = "block";
         }
@@ -62,8 +65,8 @@ var ddtabmenu = (function makeTabmenu() {
             const tabId = getTabId(tab);
             showSubmenu(tabId, tab);
         },
-        disableClick() {
-            return false;
+        disableClick(evt) {
+            evt.preventDefault();
         },
         initTabsWrapper(tabId, defaultSelected) {
             return function () {
@@ -115,40 +118,34 @@ var ddtabmenu = (function makeTabmenu() {
         }
     }
     function initMenu(tabId, defaultSelected) {
-        function initWithSubmenu(tab, submenu) {
-            addEvent(tab, "mouseleave", handlers.revert);
-            addEvent(submenu, "mouseenter", handlers.clearRevert);
-            addEvent(submenu, "mouseleave", handlers.revert);
+        function initWithSubmenu(menuItem) {
+            const config = tabs[tabId].config;
+            if (config.disableTabLinks) {
+                addEvent(menuItem, "click", handlers.disableClick);
+            }
+            if (config.snapToOriginal.snap === true) {
+                const id = menuItem.getAttribute("rel");
+                const submenu = document.getElementById(id);
+                addEvent(menuItem, "mouseenter", handlers.leaveTab);
+                addEvent(menuItem, "mouseleave", handlers.revert);
+                addEvent(submenu, "mouseenter", handlers.clearRevert);
+                addEvent(submenu, "mouseleave", handlers.revert);
+            }
         }
-        function initWithoutSubmenu(tab) {
-            addEvent(tab, "mouseleave", handlers.revertWithoutSubmenu);
-        }
-        function initSubmenu(tab) {
-            addEvent(tab, "mouseenter", handlers.leaveTab);
+        function initWithoutSubmenu(menuItem) {
+            addEvent(menuItem, "mouseenter", handlers.leaveTab);
+            addEvent(menuItem, "mouseleave", handlers.revertWithoutSubmenu);
         }
         var container = document.getElementById(tabId);
         var menuItems = container.querySelectorAll("a");
         tabs[tabId].menuItems = menuItems;
-        var id = "";
-        var submenu;
         var defaultIsShown = false;
         menuItems.forEach(function (menuItem, menuIndex) {
-            const config = tabs[tabId].config;
-            if (menuItem.getAttribute("rel")) {
-                tabs[tabId].menuItems[menuIndex].hasSubContent = true;
-                if (config.disableTabLinks) {
-                    addEvent(menuItem, "click", handlers.disableClick);
-                }
-                if (config.snapToOriginal.snap === true) {
-                    id = menuItem.getAttribute("rel");
-                    submenu = document.getElementById(id);
-                    initWithSubmenu(menuItem, submenu);
-                }
+            if (hasSubMenu(menuItem)) {
+                initWithSubmenu(menuItem);
             } else {
-                // for items without a submenu
                 initWithoutSubmenu(menuItem);
             }
-            initSubmenu(menuItem);
             if (
                 defaultSelected === "auto" &&
                 defaultIsShown !== true &&

@@ -778,4 +778,85 @@ Those event handlers are now more easily available for testing, the types of eve
 
 ## 10. Simplify if statements
 
+The menuItems.forEach section of code in the initMenu function has several nested if statements that could do with tidying up.
 
+Here's the main structure of those if statements:
+
+```javascript
+            if (...) {
+                ...
+                if (...) {
+                    ...
+                }
+                if (...) {
+                    ...
+                }
+            } else {
+                ...
+            }
+            ...
+            if (...) {
+                ...
+            } else if (...) {
+                ...
+            }
+```
+
+That's a lot of complexity that could do with being simplified. An effective way to deal with that is to use a simple function call for each if-statement condition, and move the body of the if statements out to separate functions. When using good names for those functions, the code then becomes self-documenting and is much easier to understand.
+
+A good set of tests can also help to ensure that mistakes get caught early. I have been putting together a set of tests for each part of the code that I touch. This is where a lot of little problems can be solved.
+
+The first set of if statements do things based on the config, to disable clicking and snap to the original. Going through the tests is beyond the scope for this article, but I improve the disableClick function so that instead of just returning false, it uses the event preventDefault method to disable clicking instead.
+
+```javascript
+    const handlers = {
+        ...
+        // disableClick() {
+        //     return false;
+        // },
+        disableClick(evt) {
+            evt.preventDefault();
+        },
+        ...
+    };
+```
+
+I can now easily refactor the if statements and simplify the if/else set of if statements:
+
+```javascript
+        menuItems.forEach(function (menuItem, menuIndex) {
+            if (hasSubMenu(menuItem)) {
+                initWithSubmenu(menuItem);
+            } else {
+                initWithoutSubmenu(menuItem);
+            }
+            ...
+        });
+```
+
+Those functions contain the reorganised tasks:
+
+```javascript
+    function hasSubMenu(menuItem) {
+        return menuItem.getAttribute("rel");
+    }
+    ...
+        function initWithSubmenu(menuItem) {
+            const config = tabs[tabId].config;
+            if (config.disableTabLinks) {
+                addEvent(menuItem, "click", handlers.disableClick);
+            }
+            if (config.snapToOriginal.snap === true) {
+                const id = menuItem.getAttribute("rel");
+                const submenu = document.getElementById(id);
+                addEvent(menuItem, "mouseleave", handlers.revert);
+                addEvent(submenu, "mouseleave", handlers.revert);
+            }
+            addEvent(menuItem, "mouseenter", handlers.leaveTab);
+            addEvent(submenu, "mouseenter", handlers.clearRevert);
+        }
+        function initWithoutSubmenu(menuItem) {
+            addEvent(menuItem, "mouseenter", handlers.leaveTab);
+            addEvent(menuItem, "mouseleave", handlers.revertWithoutSubmenu);
+        }
+```
