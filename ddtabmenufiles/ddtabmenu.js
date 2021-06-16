@@ -100,8 +100,10 @@ var ddtabmenu = (function makeTabmenu() {
         // get current page url, minus hostname
         return window.location.href.replace("http://" + window.location.hostname, "").replace(/^\//, "");
     }
-    function isSelected(menuUrl) {
-        const menuPathName = menuUrl.replace("http://" + menuUrl.hostname, "").replace(/^\//, "");
+    function isSelected(menuLink) {
+        const menuUrl = menuLink.href;
+        const host = "http://" + menuLink.hostname;
+        const menuPathName = menuUrl.replace(host, "").replace(/^\//, "");
         const currentPathName = getPathName();
         return currentPathName === menuPathName;
     }
@@ -148,8 +150,8 @@ var ddtabmenu = (function makeTabmenu() {
             }
             if (
                 defaultSelected === "auto" &&
-                defaultIsShown !== true &&
-                isSelected(menuItem.href)
+                defaultIsShown === false &&
+                isSelected(menuItem)
             ) {
                 showSubmenu(tabId, menuItem);
                 tabs[tabId].defaultSelected = menuItem;

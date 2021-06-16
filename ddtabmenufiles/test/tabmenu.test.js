@@ -49,6 +49,25 @@ describe("menutabs", function () {
         });
     });
     describe("initMenu forEach if/else structure", function () {
+        let mouseleaveEvent;
+        let revertSubmenuSpy;
+        let revertNoSubmenuSpy;
+        before(function () {
+            mouseleaveEvent = new window.MouseEvent("mouseleave", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            revertSubmenuSpy = chai.spy.on(
+                ddtabmenu.handlers,
+                "revert"
+            );
+            revertNoSubmenuSpy = chai.spy.on(
+                ddtabmenu.handlers,
+                "revertWithoutSubmenu"
+            );
+            ddtabmenu.initMenu("ddtabs1", 0);
+        });
         describe("disableTabLinks config", function () {
             beforeEach(function () {
                 tabs[0].onclick = null;
@@ -82,25 +101,6 @@ describe("menutabs", function () {
             });
         });
         describe("tabs have onmouseleave functions", function () {
-            let mouseleaveEvent;
-            let revertSubmenuSpy;
-            let revertNoSubmenuSpy;
-            before(function () {
-                mouseleaveEvent = new window.MouseEvent("mouseleave", {
-                    view: window,
-                    bubbles: true,
-                    cancelable: true
-                });
-                revertSubmenuSpy = chai.spy.on(
-                    ddtabmenu.handlers,
-                    "revert"
-                );
-                revertNoSubmenuSpy = chai.spy.on(
-                    ddtabmenu.handlers,
-                    "revertWithoutSubmenu"
-                );
-                ddtabmenu.initMenu("ddtabs1", 0);
-            });
             it("has revert on tab 0", function () {
                 tabs[0].dispatchEvent(mouseleaveEvent);
                 expect(revertSubmenuSpy).to.have.been.called();
@@ -127,17 +127,17 @@ describe("menutabs", function () {
                 ddtabmenu.snap2original = [true, 300];
                 tabs[0].onmouseleave = null;
             });
-            it.skip("sets the onmouseleave revert function", function () {
+            it("sets the onmouseleave revert function", function () {
                 ddtabmenu.snap2original[0] = true;
-                ddtabmenu.definemenu("ddtabs1", 0);
                 ddtabmenu.initMenu("ddtabs1", 0);
-                expect(tabs[0].onmouseleave.name).to.equal("revert");
+                tabs[0].dispatchEvent(mouseleaveEvent);
+                expect(revertSubmenuSpy).to.have.been.called();
             });
             it("doesn't set the onmouseleave revert function", function () {
                 ddtabmenu.snap2original[0] = false;
-                ddtabmenu.definemenu("ddtabs1", 0);
                 ddtabmenu.initMenu("ddtabs1", 0);
-                expect(tabs[0].onmouseleave).to.equal(null);
+                tabs[0].dispatchEvent(mouseleaveEvent);
+                expect(revertSubmenuSpy).to.have.been.called();
             });
         });
     });
@@ -151,7 +151,7 @@ describe("menutabs", function () {
         afterEach(function () {
             tabs[0].href = tab0href;
         });
-        it.skip("auto-shows the default", function () {
+        it("auto-shows the default", function () {
             const defaultSelected = "auto";
             ddtabmenu.definemenu("ddtabs1", defaultSelected);
             ddtabmenu.initMenu("ddtabs1", defaultSelected);
