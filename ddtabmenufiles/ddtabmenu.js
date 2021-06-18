@@ -100,7 +100,7 @@ var ddtabmenu = (function makeTabmenu() {
         // get current page url, minus hostname
         return window.location.href.replace("http://" + window.location.hostname, "").replace(/^\//, "");
     }
-    function isSelected(menuLink) {
+    function isCurrentPage(menuLink) {
         const menuUrl = menuLink.href;
         const host = "http://" + menuLink.hostname;
         const menuPathName = menuUrl.replace(host, "").replace(/^\//, "");
@@ -138,6 +138,19 @@ var ddtabmenu = (function makeTabmenu() {
             addEvent(menuItem, "mouseenter", handlers.leaveTab);
             addEvent(menuItem, "mouseleave", handlers.revertWithoutSubmenu);
         }
+        function isAutoTabForPage(menuItem, defaultSelected, defaultIsShown) {
+            if (defaultIsShown || defaultSelected !== "auto") {
+                return false;
+            }
+            return isCurrentPage(menuItem);
+        }
+        function resetTab(tabId, menuItem) {
+            showSubmenu(tabId, menuItem);
+            tabs[tabId].defaultSelected = menuItem;
+        }
+        function isDefaultTab(defaultSelected, menuIndex) {
+            return parseInt(defaultSelected) === menuIndex;
+        }
         var container = document.getElementById(tabId);
         var menuItems = container.querySelectorAll("a");
         tabs[tabId].menuItems = menuItems;
@@ -148,17 +161,11 @@ var ddtabmenu = (function makeTabmenu() {
             } else {
                 initWithoutSubmenu(menuItem);
             }
-            if (
-                defaultSelected === "auto" &&
-                defaultIsShown === false &&
-                isSelected(menuItem)
-            ) {
-                showSubmenu(tabId, menuItem);
-                tabs[tabId].defaultSelected = menuItem;
+            if (isAutoTabForPage(menuItem, defaultSelected, defaultIsShown)) {
                 defaultIsShown = true;
-            } else if (parseInt(defaultSelected) === menuIndex) {
-                showSubmenu(tabId, menuItem);
-                tabs[tabId].defaultSelected = menuItem;
+                resetTab(tabId, menuItem);
+            } else if (isDefaultTab(defaultSelected, menuIndex)) {
+                resetTab(tabId, menuItem);
             }
         });
     }

@@ -834,7 +834,7 @@ I can now easily refactor the if statements and simplify the if/else set of if s
         });
 ```
 
-Those functions contain the reorganised tasks:
+The above functions now contain the below reorganised tasks:
 
 ```javascript
     function hasSubMenu(menuItem) {
@@ -859,4 +859,32 @@ Those functions contain the reorganised tasks:
             addEvent(menuItem, "mouseenter", handlers.leaveTab);
             addEvent(menuItem, "mouseleave", handlers.revertWithoutSubmenu);
         }
+```
+
+The other set of if/else statements to organise are as follows:
+
+```javascript
+            if (
+                defaultSelected === "auto" &&
+                defaultIsShown === false &&
+                isSelected(menuItem)
+            ) {
+                showSubmenu(tabId, menuItem);
+                tabs[tabId].defaultSelected = menuItem;
+                defaultIsShown = true;
+            } else if (parseInt(defaultSelected) === menuIndex) {
+                showSubmenu(tabId, menuItem);
+                tabs[tabId].defaultSelected = menuItem;
+            }
+```
+
+The trickiest part is trying to figure out what name to call the functions. I've settled on isAutoTabForPage for when deciding if "auto" is on and the tab for the current page should be automatically shown.
+
+```javascript
+            if (isAutoTabForPage(menuItem, defaultSelected, defaultIsShown)) {
+                defaultIsShown = true;
+                resetTab(tabId, menuItem);
+            } else if (isDefaultTab(defaultSelected, menuIndex)) {
+                resetTab(tabId, menuItem);
+            }
 ```
