@@ -8,7 +8,8 @@ describe("menutabs", function () {
     });
     describe("when tab 0 init'd", function () {
         beforeEach(function () {
-            ddtabmenu.initMenu("ddtabs1", 0);
+            ddtabmenu.definemenu("ddtabs1", 0);
+            ddtabmenu.initMenu("ddtabs1");
         });
         it("tab 0 is current", function () {
             expect(tabs[0].className).to.contain("current");
@@ -22,7 +23,8 @@ describe("menutabs", function () {
     });
     describe("when tab 1 init'd", function () {
         beforeEach(function () {
-            ddtabmenu.initMenu("ddtabs1", 1);
+            ddtabmenu.definemenu("ddtabs1", 1);
+            ddtabmenu.initMenu("ddtabs1");
         });
         it("tab 0 isn't current", function () {
             expect(tabs[0].className).to.not.contain("current");
@@ -36,7 +38,8 @@ describe("menutabs", function () {
     });
     describe("when tab 2 init'd", function () {
         beforeEach(function () {
-            ddtabmenu.initMenu("ddtabs1", 2);
+            ddtabmenu.definemenu("ddtabs1", 2);
+            ddtabmenu.initMenu("ddtabs1");
         });
         it("tab 0 is current", function () {
             expect(tabs[0].className).to.not.contain("current");
@@ -66,7 +69,8 @@ describe("menutabs", function () {
                 ddtabmenu.handlers,
                 "revertWithoutSubmenu"
             );
-            ddtabmenu.initMenu("ddtabs1", 0);
+            ddtabmenu.definemenu("ddtabs1", 0);
+            ddtabmenu.initMenu("ddtabs1");
         });
         describe("disableTabLinks config", function () {
             beforeEach(function () {
@@ -89,14 +93,14 @@ describe("menutabs", function () {
                 ddtabmenu.disabletablinks = true;
                 const spy = chai.spy.on(ddtabmenu.handlers, "disableClick");
                 ddtabmenu.definemenu("ddtabs1", 0);
-                ddtabmenu.initMenu("ddtabs1", 0);
+                ddtabmenu.initMenu("ddtabs1");
                 tabs[0].click();
                 expect(spy).to.have.been.called();
             });
             it("doesn't disable tab links", function () {
                 ddtabmenu.disabletablinks = false;
                 ddtabmenu.definemenu("ddtabs1", 0);
-                ddtabmenu.initMenu("ddtabs1", 0);
+                ddtabmenu.initMenu("ddtabs1");
                 expect(tabs[0].onclick).to.equal(null);
             });
         });
@@ -129,13 +133,15 @@ describe("menutabs", function () {
             });
             it("sets the onmouseleave revert function", function () {
                 ddtabmenu.snap2original[0] = true;
-                ddtabmenu.initMenu("ddtabs1", 0);
+                ddtabmenu.definemenu("ddtabs1", 0);
+                ddtabmenu.initMenu("ddtabs1");
                 tabs[0].dispatchEvent(mouseleaveEvent);
                 expect(revertSubmenuSpy).to.have.been.called();
             });
             it("doesn't set the onmouseleave revert function", function () {
                 ddtabmenu.snap2original[0] = false;
-                ddtabmenu.initMenu("ddtabs1", 0);
+                ddtabmenu.definemenu("ddtabs1", 0);
+                ddtabmenu.initMenu("ddtabs1");
                 tabs[0].dispatchEvent(mouseleaveEvent);
                 expect(revertSubmenuSpy).to.have.been.called();
             });
@@ -154,13 +160,13 @@ describe("menutabs", function () {
         it("auto-shows the default", function () {
             const defaultSelected = "auto";
             ddtabmenu.definemenu("ddtabs1", defaultSelected);
-            ddtabmenu.initMenu("ddtabs1", defaultSelected);
+            ddtabmenu.initMenu("ddtabs1");
             expect(tabs[0].className).to.contain("current");
         });
         it("shows tab but not as default, when not auto", function () {
             const defaultSelected = 0;
             ddtabmenu.definemenu("ddtabs1", defaultSelected);
-            ddtabmenu.initMenu("ddtabs1", defaultSelected);
+            ddtabmenu.initMenu("ddtabs1");
             expect(tabs[0].className).to.contain("current");
         });
     });

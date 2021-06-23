@@ -30,6 +30,7 @@ var ddtabmenu = (function makeTabmenu() {
                 document.getElementById(id).style.display = "none";
             }
         });
+        targetItem = targetItem || tabs[tabId].defaultSelected;
         targetItem.className = "current";
         if (hasSubMenu(targetItem)) {
             id = targetItem.getAttribute("rel");
@@ -39,7 +40,7 @@ var ddtabmenu = (function makeTabmenu() {
     function revertToDefault(tabId) {
         const config = tabs[tabId].config;
         tabs[tabId].timer = setTimeout(function showDefault() {
-            showSubmenu(tabId, tabs[tabId].defaultSelected);
+            showSubmenu(tabId);
         }, config.snapToOriginal.delay);
     }
     const handlers = {
@@ -68,9 +69,9 @@ var ddtabmenu = (function makeTabmenu() {
         disableClick(evt) {
             evt.preventDefault();
         },
-        initTabsWrapper(tabId, defaultSelected) {
+        initTabsWrapper(tabId) {
             return function () {
-                ddtabmenu.initMenu(tabId, defaultSelected);
+                ddtabmenu.initMenu(tabId);
             };
         }
     };
@@ -119,7 +120,7 @@ var ddtabmenu = (function makeTabmenu() {
             target.attachEvent(taskType, callback);
         }
     }
-    function initMenu(tabId, defaultSelected) {
+    function initMenu(tabId) {
         function initWithSubmenu(menuItem) {
             const config = tabs[tabId].config;
             if (config.disableTabLinks) {
@@ -137,9 +138,10 @@ var ddtabmenu = (function makeTabmenu() {
         function initWithoutSubmenu(menuItem) {
             addEvent(menuItem, "mouseenter", handlers.leaveTab);
             addEvent(menuItem, "mouseleave", handlers.revertWithoutSubmenu);
-        }
-        function isAutoTabForPage(menuItem, defaultSelected, defaultIsShown) {
-            if (defaultIsShown || defaultSelected !== "auto") {
+        }   
+        function isAutoTabForPage(tabId, menuItem) {
+            var defaultTab = tabs[tabId].defaultTab;
+            if (tabs[tabId].defaultIsShown || defaultTab !== "auto") {
                 return false;
             }
             return isCurrentPage(menuItem);
@@ -147,36 +149,38 @@ var ddtabmenu = (function makeTabmenu() {
         function resetTab(tabId, menuItem) {
             showSubmenu(tabId, menuItem);
             tabs[tabId].defaultSelected = menuItem;
+            tabs[tabId].defaultIsShown = true;
         }
-        function isDefaultTab(defaultSelected, menuIndex) {
-            return parseInt(defaultSelected) === menuIndex;
+        function isDefaultTab(tabId, menuIndex) {
+            var defaultTab = tabs[tabId].defaultTab;
+            return parseInt(defaultTab) === menuIndex;
         }
         var container = document.getElementById(tabId);
         var menuItems = container.querySelectorAll("a");
         tabs[tabId].menuItems = menuItems;
-        var defaultIsShown = false;
+        tabs[tabId].defaultIsShown = false;
         menuItems.forEach(function (menuItem, menuIndex) {
             if (hasSubMenu(menuItem)) {
                 initWithSubmenu(menuItem);
             } else {
                 initWithoutSubmenu(menuItem);
             }
-            if (isAutoTabForPage(menuItem, defaultSelected, defaultIsShown)) {
-                defaultIsShown = true;
+            if (isAutoTabForPage(tabId, menuItem)) {
                 resetTab(tabId, menuItem);
-            } else if (isDefaultTab(defaultSelected, menuIndex)) {
+            } else if (isDefaultTab(tabId, menuIndex)) {
                 resetTab(tabId, menuItem);
             }
         });
     }
-    function definemenu(tabId, defaultSelected) {
+    function definemenu(tabId, defaultTab) {
         tabs[tabId] = {
             config: Object.assign({}, init(ddtabmenu)),
             timer: [],
             menuItems: null,
-            defaultSelected: -1
+            defaultSelected: -1,
+            defaultTab: defaultTab
         };
-        const initTabs = handlers.initTabsWrapper(tabId, defaultSelected);
+        const initTabs = handlers.initTabsWrapper(tabId);
         addEvent(window, "load", initTabs);
     }
     return {
